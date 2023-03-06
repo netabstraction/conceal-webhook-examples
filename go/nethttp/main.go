@@ -17,8 +17,6 @@ type application struct {
 	}
 }
 
-const basicAuthUserNameConst = "alice"
-const basicAuthPasswordConst = "p8fnxeqj5a7zbrqp"
 const signatureKeyConst = "signature-key"
 const apiKeyKeyConst = "x-api-key"
 const apiKeyValueConst = "sample-key"
@@ -28,9 +26,8 @@ func main() {
 	app := new(application)
 
 	mux := http.NewServeMux()
-	mux.HandleFunc("/unprotected", app.unprotectedHandler)
-	mux.HandleFunc("/api-key-protected", app.apiKeyAuth(app.protectedHandler))
-	mux.HandleFunc("/api-key-signature-protected", app.apiKeyAuth(app.signatureAuth(app.protectedHandler)))
+	mux.HandleFunc("/go/nethttp/api-key-protected", app.apiKeyAuth(app.protectedHandler))
+	mux.HandleFunc("/go/nethttp/api-key-signature-protected", app.apiKeyAuth(app.signatureAuth(app.protectedHandler)))
 
 	srv := &http.Server{
 		Addr:         ":4000",
@@ -48,11 +45,6 @@ func main() {
 func (app *application) protectedHandler(w http.ResponseWriter, r *http.Request) {
 	app.logRequest(r, "Protected Handler")
 	fmt.Fprintln(w, "This is the protected handler")
-}
-
-func (app *application) unprotectedHandler(w http.ResponseWriter, r *http.Request) {
-	app.logRequest(r, "Unprotected handler")
-	fmt.Fprintln(w, "This is the unprotected handler")
 }
 
 func (app *application) apiKeyAuth(next http.HandlerFunc) http.HandlerFunc {
