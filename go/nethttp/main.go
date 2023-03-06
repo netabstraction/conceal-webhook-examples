@@ -22,7 +22,6 @@ func main() {
 	app := new(application)
 
 	mux := http.NewServeMux()
-	mux.HandleFunc("/go/nethttp/api-key-protected", app.apiKeyAuth(app.protectedHandler))
 	mux.HandleFunc("/go/nethttp/api-key-signature-protected", app.apiKeyAuth(app.signatureAuth(app.protectedHandler)))
 
 	srv := &http.Server{
