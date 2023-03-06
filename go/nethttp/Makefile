@@ -1,3 +1,5 @@
-TARGET="conceal-webhook-example"
+build:
+	go build -o bin/main main.go
 
-#In progress
+run:
+	go run main.go

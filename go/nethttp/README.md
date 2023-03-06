@@ -1,5 +1,8 @@
-# Run the application
-`go run . `
+## Build the application
+`make build`
+
+## Run the application
+`make run `
 
 ## The application exposes following webhook
 `http://127.0.0.1:4000/go/nethttp/api-key-signature-protected`
