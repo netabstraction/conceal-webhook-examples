@@ -7,20 +7,16 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 	"time"
 )
 
 type application struct {
-	auth struct {
-		username string
-		password string
-	}
 }
 
 const signatureKeyConst = "signature-key"
 const apiKeyKeyConst = "x-api-key"
 const apiKeyValueConst = "sample-key"
-
 
 func main() {
 	app := new(application)
@@ -42,28 +38,45 @@ func main() {
 	log.Fatal(err)
 }
 
+// Exposed protected handler 
 func (app *application) protectedHandler(w http.ResponseWriter, r *http.Request) {
 	app.logRequest(r, "Protected Handler")
 	fmt.Fprintln(w, "This is the protected handler")
 }
 
+// Verify api key and timestamp
 func (app *application) apiKeyAuth(next http.HandlerFunc) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
+		// Match api key from request header
 		apiKeyMatch := r.Header.Get(apiKeyKeyConst) == apiKeyValueConst
 
-		if apiKeyMatch {
-			next.ServeHTTP(w, r)
-			return
+		if !apiKeyMatch {
+			app.logRequest(r, "Api key auth Failed")
+			w.Header().Set("WWW-Authenticate", `Basic realm="restricted", charset="UTF-8"`)
+			http.Error(w, "Invalid API Key", http.StatusUnauthorized)
 		}
 
-		app.logRequest(r, "Api key auth Failed")
+		// Check request timestamp is the range of [current_timestamp-60sec, current_timestamp_120sec]
+		requestTimestamp, err := strconv.ParseInt(r.Header.Get("conceal_timestamp"), 10, 64)
+		currentTimestamp := time.Now().Unix()
+		if err != nil {
+			app.logRequest(r, "Invalid Timestamp")
+			w.Header().Set("WWW-Authenticate", `Basic realm="restricted", charset="UTF-8"`)
+			http.Error(w, "Invalid Timestamp", http.StatusBadRequest)
+		}
+		if requestTimestamp-currentTimestamp > 60000 || currentTimestamp-requestTimestamp > 120000 {
+			app.logRequest(r, "Invalid Timestamp. Timestamp out of range")
+			w.Header().Set("WWW-Authenticate", `Basic realm="restricted", charset="UTF-8"`)
+			http.Error(w, "Invalid Timestamp. Timestamp out of range", http.StatusBadRequest)
+		}
 
-		w.Header().Set("WWW-Authenticate", `Basic realm="restricted", charset="UTF-8"`)
-		http.Error(w, "Invalid API Key", http.StatusUnauthorized)
+		next.ServeHTTP(w, r)	
+		return
 	})
 }
 
+// Verify signature value 
 func (app *application) signatureAuth(next http.HandlerFunc) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
@@ -77,20 +90,20 @@ func (app *application) signatureAuth(next http.HandlerFunc) http.HandlerFunc {
 
 		signatureMatch := sha == messageSignature
 
-		if signatureMatch {
-			next.ServeHTTP(w, r)
-			return
+		if !signatureMatch {
+			app.logRequest(r, "Signature auth Failed")
+			w.Header().Set("WWW-Authenticate", `Basic realm="restricted", charset="UTF-8"`)
+			http.Error(w, "Invalid Signature", http.StatusUnauthorized)
 		}
 
-		app.logRequest(r, "Signature auth Failed")
-
-		w.Header().Set("WWW-Authenticate", `Basic realm="restricted", charset="UTF-8"`)
-		http.Error(w, "Invalid Signature", http.StatusUnauthorized)
+		next.ServeHTTP(w, r)
+		return
 	})
 }
 
 func (app *application) logRequest(r *http.Request, tag string) {
 	log.Println("Got a new request " + tag)
+	
 	log.Println(r.URL)
 	log.Println(r.Method)
 	log.Println(r.Header)
