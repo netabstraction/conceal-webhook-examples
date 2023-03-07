@@ -30,13 +30,13 @@ func main() {
 		},
 	}))
 
-	e.Use(TimestampValidator)
-	e.Use(SignatureValidator)
+	e.Use(timestampValidator)
+	e.Use(signatureValidator)
 
 	e.Use(middleware.Logger())
 
 	// Routes
-	e.GET("/go/echo/api-key-signature-protected", protectedHandler)
+	e.POST("/go/echo/api-key-signature-protected", protectedHandler)
 
 	// Start server
 	e.Logger.Fatal(e.Start(":4001"))
@@ -49,17 +49,17 @@ func protectedHandler(c echo.Context) error {
 }
 
 // Timestamp validator
-func TimestampValidator(next echo.HandlerFunc) echo.HandlerFunc {
+func timestampValidator(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		requestTimestamp, err := strconv.ParseInt(c.Request().Header.Get("conceal_timestamp"), 10, 64)
 		currentTimestamp := time.Now().Unix()
 		if err != nil {
-			LogRequest(c, "Invalid Timestamp")
+			logRequest(c, "Invalid Timestamp")
 			c.Response().Header().Set("WWW-Authenticate", `Basic realm="restricted", charset="UTF-8"`)
 			return c.String(http.StatusBadRequest, "Invalid Timestamp")
 		}
 		if requestTimestamp-currentTimestamp > 60000 || currentTimestamp-requestTimestamp > 120000 {
-			LogRequest(c, "Invalid Timestamp. Timestamp out of range")
+			logRequest(c, "Invalid Timestamp. Timestamp out of range")
 			c.Response().Header().Set("WWW-Authenticate", `Basic realm="restricted", charset="UTF-8"`)
 			return c.String(http.StatusBadRequest, "Invalid Timestamp. Timestamp out of range")
 		}
@@ -68,7 +68,7 @@ func TimestampValidator(next echo.HandlerFunc) echo.HandlerFunc {
 }
 
 // Signature validator
-func SignatureValidator(next echo.HandlerFunc) echo.HandlerFunc {
+func signatureValidator(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		requestTimestamp := c.Request().Header.Get("conceal_timestamp")
 		messageSignature := c.Request().Header.Get("conceal_signature")
@@ -81,7 +81,7 @@ func SignatureValidator(next echo.HandlerFunc) echo.HandlerFunc {
 		signatureMatch := sha == messageSignature
 
 		if !signatureMatch {
-			LogRequest(c, "Signature auth Failed")
+			logRequest(c, "Signature auth Failed")
 			c.Response().Header().Set("WWW-Authenticate", `Basic realm="restricted", charset="UTF-8"`)
 			return c.String(http.StatusUnauthorized, "Invalid Signature")
 		}
@@ -89,7 +89,7 @@ func SignatureValidator(next echo.HandlerFunc) echo.HandlerFunc {
 	}
 }
 
-func LogRequest(c echo.Context, tag string) {
+func logRequest(c echo.Context, tag string) {
 	log.Println("Got a new request " + tag)
 
 	log.Println(c.Request().URL)

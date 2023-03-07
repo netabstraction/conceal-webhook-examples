@@ -19,10 +19,9 @@ const apiKeyKeyConst = "x-api-key"
 const apiKeyValueConst = "sample-key"
 
 func main() {
-	app := new(application)
 
 	mux := http.NewServeMux()
-	mux.HandleFunc("/go/nethttp/api-key-signature-protected", app.apiKeyAuth(app.signatureAuth(app.protectedHandler)))
+	mux.HandleFunc("/go/nethttp/api-key-signature-protected", apiKeyAuth(signatureAuth(protectedHandler)))
 
 	srv := &http.Server{
 		Addr:         ":4000",
@@ -38,20 +37,20 @@ func main() {
 }
 
 // Exposed protected handler 
-func (app *application) protectedHandler(w http.ResponseWriter, r *http.Request) {
-	app.logRequest(r, "Protected Handler")
+func protectedHandler(w http.ResponseWriter, r *http.Request) {
+	logRequest(r, "Protected Handler")
 	fmt.Fprintln(w, "This is the protected handler")
 }
 
 // Verify api key and timestamp
-func (app *application) apiKeyAuth(next http.HandlerFunc) http.HandlerFunc {
+func apiKeyAuth(next http.HandlerFunc) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
 		// Match api key from request header
 		apiKeyMatch := r.Header.Get(apiKeyKeyConst) == apiKeyValueConst
 
 		if !apiKeyMatch {
-			app.logRequest(r, "Api key auth Failed")
+			logRequest(r, "Api key auth Failed")
 			w.Header().Set("WWW-Authenticate", `Basic realm="restricted", charset="UTF-8"`)
 			http.Error(w, "Invalid API Key", http.StatusUnauthorized)
 		}
@@ -60,12 +59,12 @@ func (app *application) apiKeyAuth(next http.HandlerFunc) http.HandlerFunc {
 		requestTimestamp, err := strconv.ParseInt(r.Header.Get("conceal_timestamp"), 10, 64)
 		currentTimestamp := time.Now().Unix()
 		if err != nil {
-			app.logRequest(r, "Invalid Timestamp")
+			logRequest(r, "Invalid Timestamp")
 			w.Header().Set("WWW-Authenticate", `Basic realm="restricted", charset="UTF-8"`)
 			http.Error(w, "Invalid Timestamp", http.StatusBadRequest)
 		}
 		if requestTimestamp-currentTimestamp > 60000 || currentTimestamp-requestTimestamp > 120000 {
-			app.logRequest(r, "Invalid Timestamp. Timestamp out of range")
+			logRequest(r, "Invalid Timestamp. Timestamp out of range")
 			w.Header().Set("WWW-Authenticate", `Basic realm="restricted", charset="UTF-8"`)
 			http.Error(w, "Invalid Timestamp. Timestamp out of range", http.StatusBadRequest)
 		}
@@ -76,7 +75,7 @@ func (app *application) apiKeyAuth(next http.HandlerFunc) http.HandlerFunc {
 }
 
 // Verify signature value 
-func (app *application) signatureAuth(next http.HandlerFunc) http.HandlerFunc {
+func signatureAuth(next http.HandlerFunc) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
 		timestamp := r.Header.Get("conceal_timestamp")
@@ -90,7 +89,7 @@ func (app *application) signatureAuth(next http.HandlerFunc) http.HandlerFunc {
 		signatureMatch := sha == messageSignature
 
 		if !signatureMatch {
-			app.logRequest(r, "Signature auth Failed")
+			logRequest(r, "Signature auth Failed")
 			w.Header().Set("WWW-Authenticate", `Basic realm="restricted", charset="UTF-8"`)
 			http.Error(w, "Invalid Signature", http.StatusUnauthorized)
 		}
@@ -100,7 +99,7 @@ func (app *application) signatureAuth(next http.HandlerFunc) http.HandlerFunc {
 	})
 }
 
-func (app *application) logRequest(r *http.Request, tag string) {
+func logRequest(r *http.Request, tag string) {
 	log.Println("Got a new request " + tag)
 	
 	log.Println(r.URL)
