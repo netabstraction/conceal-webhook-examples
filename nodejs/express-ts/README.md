@@ -7,6 +7,9 @@
 ## The application exposes following webhook
 `http://127.0.0.1:4002/nodejs/express-ts/api-key-signature-protected`
 
+## Webhook Method
+POST
+
 ## API-KEY-AUTH value
 `key` : `x-api-key`
 
