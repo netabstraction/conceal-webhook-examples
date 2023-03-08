@@ -44,8 +44,8 @@ func main() {
 
 // Exposed protected handler
 func protectedHandler(c echo.Context) error {
-		log.Println("This is the protected handler")
-		return c.String(http.StatusOK, "Hello, World!")
+		logRequest(c, "200 OK")
+		return c.String(http.StatusOK, "")
 }
 
 // Timestamp validator
@@ -58,7 +58,8 @@ func timestampValidator(next echo.HandlerFunc) echo.HandlerFunc {
 			c.Response().Header().Set("WWW-Authenticate", `Basic realm="restricted", charset="UTF-8"`)
 			return c.String(http.StatusBadRequest, "Invalid Timestamp")
 		}
-		if requestTimestamp-currentTimestamp > 60000 || currentTimestamp-requestTimestamp > 120000 {
+		log.Println(fmt.Sprintf("Time Diff: %d", requestTimestamp-currentTimestamp))
+		if requestTimestamp-currentTimestamp < -60000 || requestTimestamp-currentTimestamp > 120000 {
 			logRequest(c, "Invalid Timestamp. Timestamp out of range")
 			c.Response().Header().Set("WWW-Authenticate", `Basic realm="restricted", charset="UTF-8"`)
 			return c.String(http.StatusBadRequest, "Invalid Timestamp. Timestamp out of range")
@@ -73,7 +74,7 @@ func signatureValidator(next echo.HandlerFunc) echo.HandlerFunc {
 		requestTimestamp := c.Request().Header.Get("conceal_timestamp")
 		messageSignature := c.Request().Header.Get("conceal_signature")
 
-		message := fmt.Sprintf("%s|%s://%s%s", requestTimestamp, "http", c.Request().Host, c.Request().URL)
+		message := fmt.Sprintf("%s|%s://%s%s", requestTimestamp, "http", c.Request().Host, c.Request().URL.Path)
 		hasher := hmac.New(sha256.New, []byte(signatureKeyConst))
 		hasher.Write([]byte(message))
 		sha := fmt.Sprintf("%x", hasher.Sum(nil))
@@ -90,15 +91,13 @@ func signatureValidator(next echo.HandlerFunc) echo.HandlerFunc {
 }
 
 func logRequest(c echo.Context, tag string) {
-	log.Println("Got a new request " + tag)
-
-	log.Println(c.Request().URL)
-	log.Println(c.Request().Method)
-	log.Println(c.Request().Header)
-	log.Println(c.Request().URL)
-
 	var body map[string]interface{}
 	json.NewDecoder(c.Request().Body).Decode(&body)
 
-	log.Println(body)
+	log.Println(fmt.Sprintf("Request Status: %s", tag))
+	log.Println("REQUEST")
+	log.Println(fmt.Sprintf("Url : %s", c.Request().URL))
+	log.Println(fmt.Sprintf("Method : %s", c.Request().Method))
+	log.Println(fmt.Sprintf("Header : %s", c.Request().Header))
+	log.Println(fmt.Sprintf("Body: %s", body))
 }

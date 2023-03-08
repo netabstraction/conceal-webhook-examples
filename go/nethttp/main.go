@@ -36,10 +36,11 @@ func main() {
 	log.Fatal(err)
 }
 
-// Exposed protected handler 
+// Exposed protected handler
 func protectedHandler(w http.ResponseWriter, r *http.Request) {
-	logRequest(r, "Protected Handler")
-	fmt.Fprintln(w, "This is the protected handler")
+	logRequest(r, "200 OK")
+	w.WriteHeader(http.StatusOK)
+	return
 }
 
 // Verify api key and timestamp
@@ -63,18 +64,19 @@ func apiKeyAuth(next http.HandlerFunc) http.HandlerFunc {
 			w.Header().Set("WWW-Authenticate", `Basic realm="restricted", charset="UTF-8"`)
 			http.Error(w, "Invalid Timestamp", http.StatusBadRequest)
 		}
-		if requestTimestamp-currentTimestamp > 60000 || currentTimestamp-requestTimestamp > 120000 {
+		log.Println(fmt.Sprintf("Time Diff: %d", requestTimestamp-currentTimestamp))
+		if requestTimestamp-currentTimestamp < -60000 || requestTimestamp-currentTimestamp > 120000 {
 			logRequest(r, "Invalid Timestamp. Timestamp out of range")
 			w.Header().Set("WWW-Authenticate", `Basic realm="restricted", charset="UTF-8"`)
 			http.Error(w, "Invalid Timestamp. Timestamp out of range", http.StatusBadRequest)
 		}
 
-		next.ServeHTTP(w, r)	
+		next.ServeHTTP(w, r)
 		return
 	})
 }
 
-// Verify signature value 
+// Verify signature value
 func signatureAuth(next http.HandlerFunc) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
@@ -100,15 +102,13 @@ func signatureAuth(next http.HandlerFunc) http.HandlerFunc {
 }
 
 func logRequest(r *http.Request, tag string) {
-	log.Println("Got a new request " + tag)
-	
-	log.Println(r.URL)
-	log.Println(r.Method)
-	log.Println(r.Header)
-	log.Println(r.URL.RawQuery)
-
 	var body map[string]interface{}
 	json.NewDecoder(r.Body).Decode(&body)
 
-	log.Println(body)
+	log.Println(fmt.Sprintf("Request Status: %s", tag))
+	log.Println("REQUEST")
+	log.Println(fmt.Sprintf("Url : %s?%s", r.URL, r.URL.RawQuery))
+	log.Println(fmt.Sprintf("Method : %s", r.Method))
+	log.Println(fmt.Sprintf("Header : %s", r.Header))
+	log.Println(fmt.Sprintf("Body: %s", body))
 }
