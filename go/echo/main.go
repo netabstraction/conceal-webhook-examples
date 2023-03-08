@@ -36,19 +36,19 @@ func main() {
 	e.Use(middleware.Logger())
 
 	// Routes
-	e.POST("/go/echo/api-key-signature-protected", protectedHandler)
+	e.POST("/go/echo/api-key-signature-protected", webhookPluginAPI)
 
 	// Start server
 	e.Logger.Fatal(e.Start(":4001"))
 }
 
 // Exposed protected handler
-func protectedHandler(c echo.Context) error {
+func webhookPluginAPI(c echo.Context) error {
 		logRequest(c, "200 OK")
 		return c.String(http.StatusOK, "")
 }
 
-// Timestamp validator
+// Timestamp validator request timestamp is in the range of [current_timestamp-60sec, current_timestamp_120sec]
 func timestampValidator(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		requestTimestamp, err := strconv.ParseInt(c.Request().Header.Get("conceal_timestamp"), 10, 64)

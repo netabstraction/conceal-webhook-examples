@@ -21,7 +21,7 @@ const apiKeyValueConst = "sample-key"
 func main() {
 
 	mux := http.NewServeMux()
-	mux.HandleFunc("/go/nethttp/api-key-signature-protected", apiKeyAuth(signatureAuth(protectedHandler)))
+	mux.HandleFunc("/go/nethttp/api-key-signature-protected", apiKeyAuth(signatureAuth(webhookPluginAPI)))
 
 	srv := &http.Server{
 		Addr:         ":4000",
@@ -37,7 +37,7 @@ func main() {
 }
 
 // Exposed protected handler
-func protectedHandler(w http.ResponseWriter, r *http.Request) {
+func webhookPluginAPI(w http.ResponseWriter, r *http.Request) {
 	logRequest(r, "200 OK")
 	w.WriteHeader(http.StatusOK)
 	return
@@ -56,7 +56,7 @@ func apiKeyAuth(next http.HandlerFunc) http.HandlerFunc {
 			http.Error(w, "Invalid API Key", http.StatusUnauthorized)
 		}
 
-		// Check request timestamp is the range of [current_timestamp-60sec, current_timestamp_120sec]
+		// Check request timestamp is in the range of [current_timestamp-60sec, current_timestamp_120sec]
 		requestTimestamp, err := strconv.ParseInt(r.Header.Get("conceal_timestamp"), 10, 64)
 		currentTimestamp := time.Now().Unix()
 		if err != nil {
