@@ -1,7 +1,7 @@
 #build
-**/bin/*
-**/dist/*
-/build
+**/bin
+**/dist
+**/build
 
 # dependencies
 **/node_modules
