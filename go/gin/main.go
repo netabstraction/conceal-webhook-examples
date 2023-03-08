@@ -28,7 +28,7 @@ func main() {
 	router.Use(apiKeyAuth)
 
 	// routes
-	router.GET("/go/gin/api-key-signature-protected", protectedHandler)
+	router.POST("/go/gin/api-key-signature-protected", protectedHandler)
 
 	log.Printf("starting server on %s", ":4000")
 	router.Run("localhost:4000")
@@ -38,6 +38,7 @@ func main() {
 func protectedHandler(c *gin.Context) {
 	logRequest(c, "200 OK")
 	c.IndentedJSON(http.StatusOK, gin.H{"message": "works"})
+	c.Next()
 }
 
 func apiKeyAuth(c *gin.Context) {
@@ -76,7 +77,7 @@ func signatureAuth(c *gin.Context) {
 	timestamp := c.Request.Header.Get("conceal_timestamp")
 	messageSignature := c.Request.Header.Get("conceal_signature")
 
-	message := fmt.Sprintf("%s|%s://%s%s", timestamp, "http", c.Request.Host, c.FullPath)
+	message := fmt.Sprintf("%s|%s://%s%s", timestamp, "http", c.Request.Host, c.Request.URL.Path)
 	hasher := hmac.New(sha256.New, []byte(signatureKeyConst))
 	hasher.Write([]byte(message))
 	sha := fmt.Sprintf("%x", hasher.Sum(nil))
@@ -84,6 +85,9 @@ func signatureAuth(c *gin.Context) {
 	signatureMatch := sha == messageSignature
 
 	if !signatureMatch {
+		fmt.Printf("message: %s\r\n", message)
+		fmt.Printf("signature: %s\r\n", messageSignature)
+		fmt.Printf("sha: %s\r\n", sha)
 		logRequest(c, "Signature auth failed")
 		c.Writer.Header().Set("WWW-Authenticate", `Basic realm="restricted", charset="UTF-8"`)
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": "Invalid signature"})
