@@ -1,0 +1,77 @@
+{
+	"info": {
+		"_postman_id": "27859807-9128-4f33-8a9a-eccfca6979f9",
+		"name": "Webhook Example",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "20264462"
+	},
+	"item": [
+		{
+			"name": "Webhook Example",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"const currentTimestamp = Math.floor(Date.now() / 1000);",
+							"const webhookUrl = postman.getGlobalVariable(\"webhookUrl\");",
+							"const signatureKey = postman.getGlobalVariable(\"signature-key\")",
+							"const message = `${currentTimestamp}|${webhookUrl}`;",
+							"const signature = CryptoJS.HmacSHA256(message, signatureKey);",
+							"",
+							"postman.setGlobalVariable(\"conceal_signature\", signature );",
+							"postman.setGlobalVariable(\"conceal_timestamp\", currentTimestamp);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "x-api-key",
+						"value": "sample-key",
+						"type": "text"
+					},
+					{
+						"key": "conceal_timestamp",
+						"value": "{{conceal_timestamp}}",
+						"type": "text"
+					},
+					{
+						"key": "conceal_signature",
+						"value": "{{conceal_signature}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"event\": \"Scanned URL\",\n    \"host\": \"Conceal API\",\n    \"sourcetype\": \"Conceal API Post Process\",\n    \"company_id\": \"91140740-fe8a-4350-ad74-d79bb2828318\",\n    \"company_name\": \"Sample Company\",\n    \"user_email\": \"user1@sample_company.io\",\n    \"user_id\": \"e2bfb697-a3c6-429a-89fc-ffef546d348b\",\n    \"url\": \"https://www.google.com\",\n    \"count\": 2,\n    \"decision\": {\n      \"enforcetls\": \"allow\",\n      \"noip\": \"allow\"\n    },\n    \"final_decision\": \"allow\",\n    \"timestamp\": 1678113806\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:4000/go/nethttp/api-key-signature-protected",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "4000",
+					"path": [
+						"go",
+						"nethttp",
+						"api-key-signature-protected"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
