@@ -1,8 +1,12 @@
-## Build the application
+## Requirement
+python (Version 3.11+) 
+pip (version 3.11+)
 
+## Build the application
+`make build` 
 
 ## Run the application
-
+`make run`
 
 ## The application exposes following webhook
 `http://127.0.0.1:4004/python/fastapi/api-key-signature-protected`
