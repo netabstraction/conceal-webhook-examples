@@ -37,7 +37,7 @@ func main() {
 // Exposed protected handler
 func protectedHandler(c *gin.Context) {
 	logRequest(c, "200 OK")
-	c.IndentedJSON(http.StatusOK, gin.H{"message": "works"})
+	c.IndentedJSON(http.StatusOK, gin.H{"msg": "200 Ok"})
 	c.Next()
 }
 
