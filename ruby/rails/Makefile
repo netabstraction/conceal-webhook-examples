@@ -1,5 +1,6 @@
 build:
-	bundle install --path vendor/bundle
+	bundle install
 
 run:
+	bin/rails server
 
