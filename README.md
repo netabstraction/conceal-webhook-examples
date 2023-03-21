@@ -6,7 +6,7 @@
 
 ## Postman
 
-Check this [exported postman](./test-util/Webhook Example.postman_collection.json)
+Check this [Postman Script](/test-util/Webhook Example.postman_collection.json)
 
 * Add following script to prerequest script
 ```

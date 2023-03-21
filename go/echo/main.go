@@ -51,7 +51,7 @@ func webhookPluginAPI(c echo.Context) error {
 // Timestamp validator request timestamp is in the range of [current_timestamp-60sec, current_timestamp_120sec]
 func timestampValidator(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
-		requestTimestamp, err := strconv.ParseInt(c.Request().Header.Get("conceal_timestamp"), 10, 64)
+		requestTimestamp, err := strconv.ParseInt(c.Request().Header.Get("conceal-timestamp"), 10, 64)
 		currentTimestamp := time.Now().Unix()
 		if err != nil {
 			logRequest(c, "Invalid Timestamp")
@@ -71,8 +71,8 @@ func timestampValidator(next echo.HandlerFunc) echo.HandlerFunc {
 // Signature validator
 func signatureValidator(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
-		requestTimestamp := c.Request().Header.Get("conceal_timestamp")
-		messageSignature := c.Request().Header.Get("conceal_signature")
+		requestTimestamp := c.Request().Header.Get("conceal-timestamp")
+		messageSignature := c.Request().Header.Get("conceal-signature")
 
 		message := fmt.Sprintf("%s|%s://%s%s", requestTimestamp, "http", c.Request().Host, c.Request().URL.Path)
 		hasher := hmac.New(sha256.New, []byte(signatureKeyConst))

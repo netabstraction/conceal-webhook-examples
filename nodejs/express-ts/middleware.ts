@@ -27,7 +27,7 @@ const timestampValidator = (
   next: NextFunction
 ) => {
   const requestTimestamp = req.headers[
-    "conceal_timestamp"
+    "conceal-timestamp"
   ] as unknown as number;
   const currentTimestamp = Math.floor(Date.now() / 1000);
 
@@ -51,10 +51,10 @@ const signatureValidator = (
   next: NextFunction
 ) => {
   const requestTimestamp = req.headers[
-    "conceal_timestamp"
+    "conceal-timestamp"
   ] as unknown as string;
   const requestSignature = req.headers[
-    "conceal_signature"
+    "conceal-signature"
   ] as unknown as string;
 
   const message = `${requestTimestamp}|${webhookUrl}`;

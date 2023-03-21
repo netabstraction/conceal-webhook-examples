@@ -52,7 +52,7 @@ func apiKeyAuth(c *gin.Context) {
 		return
 	}
 
-	requestTimestamp, err := strconv.ParseInt(c.Request.Header.Get("conceal_timestamp"), 10, 64)
+	requestTimestamp, err := strconv.ParseInt(c.Request.Header.Get("conceal-timestamp"), 10, 64)
 	if err != nil {
 		logRequest(c, "Invalid timestamp")
 		c.Writer.Header().Set("WWW-Authenticate", `Basic realm="restricted", charset="UTF-8"`)
@@ -74,8 +74,8 @@ func apiKeyAuth(c *gin.Context) {
 }
 
 func signatureAuth(c *gin.Context) {
-	timestamp := c.Request.Header.Get("conceal_timestamp")
-	messageSignature := c.Request.Header.Get("conceal_signature")
+	timestamp := c.Request.Header.Get("conceal-timestamp")
+	messageSignature := c.Request.Header.Get("conceal-signature")
 
 	message := fmt.Sprintf("%s|%s://%s%s", timestamp, "http", c.Request.Host, c.Request.URL.Path)
 	hasher := hmac.New(sha256.New, []byte(signatureKeyConst))
