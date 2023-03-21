@@ -37,7 +37,7 @@ func main() {
 // Exposed protected handler
 func protectedHandler(c *gin.Context) {
 	logRequest(c, "200 OK")
-	c.IndentedJSON(http.StatusOK, gin.H{"message": "works"})
+	c.IndentedJSON(http.StatusOK, gin.H{"msg": "200 Ok"})
 	c.Next()
 }
 
@@ -62,7 +62,6 @@ func apiKeyAuth(c *gin.Context) {
 	}
 
 	currentTimestamp := time.Now().Unix()
-	log.Println(fmt.Sprintf("Time Diff: %d", requestTimestamp-currentTimestamp))
 
 	if requestTimestamp-currentTimestamp < -60000 || requestTimestamp-currentTimestamp > 120000 {
 		logRequest(c, "Invalid timestamp. Timestamp out of range")
@@ -85,9 +84,6 @@ func signatureAuth(c *gin.Context) {
 	signatureMatch := sha == messageSignature
 
 	if !signatureMatch {
-		fmt.Printf("message: %s\r\n", message)
-		fmt.Printf("signature: %s\r\n", messageSignature)
-		fmt.Printf("sha: %s\r\n", sha)
 		logRequest(c, "Signature auth failed")
 		c.Writer.Header().Set("WWW-Authenticate", `Basic realm="restricted", charset="UTF-8"`)
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": "Invalid signature"})
