@@ -27,12 +27,11 @@ class SignatureValidator:
     def __call__(self, request):
         request_time = request.headers.get("conceal-timestamp")
         request_signature = request.headers.get("conceal-signature")
-        print(request_signature)
 
         message = '{}|{}'.format(request_time, WEBHOOK_URL_CONST)
         signature = hmac.new(bytes(SIGNATURE_KEY_CONST, 'utf-8'),
                              msg=bytes(message, 'utf-8'), digestmod=hashlib.sha256).hexdigest()
-        print(signature)
+
         if signature != request_signature:
             print("Invalid Signature")
             response = JsonResponse({'error': 'Invalid Signature'})
