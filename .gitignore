@@ -9,5 +9,5 @@
 # IDE
 **/.idea
 **/.vscode
-**/csharp/obj
+**/obj
 

@@ -101,7 +101,7 @@ public class ConcealRequest {
         result = prime * result + ((url == null) ? 0 : url.hashCode());
         result = prime * result + count;
         result = prime * result + ((decision == null) ? 0 : decision.hashCode());
-        result = prime * result + (finalDecision ? 1231 : 1237);
+        result = prime * result + ((finalDecision == null) ? 0 : finalDecision.hashCode());
         result = prime * result + (int) (timeStamp ^ (timeStamp >>> 32));
         return result;
     }
