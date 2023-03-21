@@ -17,7 +17,7 @@ module.exports.apiKeyAuthValidator = (req, res, next) => {
 
 // Timestamp validator request timestamp is in the range of [current_timestamp-60sec, current_timestamp_120sec]
 module.exports.timestampValidator = (req, res, next) => {
-  const requestTimestamp = req.headers["conceal_timestamp"];
+  const requestTimestamp = req.headers["conceal-timestamp"];
   const currentTimestamp = Math.floor(Date.now() / 1000);
 
   if (
@@ -35,8 +35,8 @@ module.exports.timestampValidator = (req, res, next) => {
 
 // Signature validator
 module.exports.signatureValidator = (req, res, next) => {
-  const requestTimestamp = req.headers["conceal_timestamp"];
-  const requestSignature = req.headers["conceal_signature"];
+  const requestTimestamp = req.headers["conceal-timestamp"];
+  const requestSignature = req.headers["conceal-signature"];
 
   const message = `${requestTimestamp}|${webhookUrl}`;
   console.log(`Computed Signature Message: ${message}`);
