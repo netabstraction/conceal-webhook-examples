@@ -11,7 +11,7 @@ public class ConcealRequest {
     private String url;
     private int count;
     private Decision decision;
-    private boolean finalDecision;
+    private String finalDecision;
     private long timeStamp;
     public ConcealRequest() {
     }
@@ -75,10 +75,10 @@ public class ConcealRequest {
     public void setDecision(Decision decision) {
         this.decision = decision;
     }
-    public boolean isFinalDecision() {
+    public String isFinalDecision() {
         return finalDecision;
     }
-    public void setFinalDecision(boolean finalDecision) {
+    public void setFinalDecision(String finalDecision) {
         this.finalDecision = finalDecision;
     }
     public long getTimeStamp() {

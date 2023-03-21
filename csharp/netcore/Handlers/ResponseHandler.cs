@@ -2,9 +2,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace csharp.netcore.Handlers;
 
-[ApiController, Route("{prefix:webhookRoutePrefix}/[controller]")]
+[ApiController, Route("[controller]")]
 public abstract class ResponseHandler<TRequest, TResponse>
 {
-    [HttpPost, Route("api-key-signature-protected")]
-    public abstract Task<TResponse> Handle([FromBody] TRequest request);
+    [HttpPost, Route("")]
+    public abstract Task<TResponse> Handle([FromBody] TRequest request, [FromHeader(Name = "X-Api-Key")] string apiKey, [FromHeader(Name = "X-Signature")] string signature, [FromHeader(Name = "X-TimeStamp")] long timeStamp);
 }

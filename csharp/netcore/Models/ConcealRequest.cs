@@ -6,17 +6,17 @@ public class ConcealRequest
     {
     }
 
-    public string Event { get; set; }
-    public string host { get; set; }
-    public string sourceType { get; set; }
-    public string compantId { get; set; }
-    public string companyName { get; set; }
-    public string userEmail { get; set; }
-    public string userId { get; set; }
-    public string url { get; set; }
+    public string? Event { get; set; }
+    public string? host { get; set; }
+    public string? sourceType { get; set; }
+    public string? compantId { get; set; }
+    public string? companyName { get; set; }
+    public string? userEmail { get; set; }
+    public string? userId { get; set; }
+    public string? url { get; set; }
     public int count { get; set; }
-    public Decision decision { get; set; }
-    public bool finalDecision { get; set; }
+    public Decision? decision { get; set; }
+    public string? finalDecision { get; set; }
     public long timeStamp { get; set; }
 
     public override bool Equals(object? obj)

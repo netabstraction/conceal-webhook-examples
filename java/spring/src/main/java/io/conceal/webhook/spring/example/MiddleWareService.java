@@ -12,7 +12,7 @@ public class MiddleWareService implements MiddleWare {
 
     @Override
     public boolean apiKeyValidator(final String apiKey) {
-        if(apiKey == null || !apiKey.equals(API_VALUE_CONSTANT)) {
+        if (apiKey == null || !apiKey.equals(API_VALUE_CONSTANT)) {
             return false;
         }
 
@@ -21,10 +21,10 @@ public class MiddleWareService implements MiddleWare {
 
     @Override
     public boolean timeStampValidator(final Long timeStamp) {
-        final long currentTime = System.currentTimeMillis() / 1000;
+        final long currentTime = System.currentTimeMillis();
 
         if (timeStamp - currentTime < -60000 ||
-            timeStamp - currentTime > 120000) {
+                timeStamp - currentTime > 120000) {
             return false;
         }
 
@@ -43,5 +43,4 @@ public class MiddleWareService implements MiddleWare {
         return true;
     }
 
-    
 }

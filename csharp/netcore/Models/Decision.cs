@@ -6,8 +6,8 @@ public class Decision
     {
     }
 
-    public bool enforceTls { get; set; }
-    public bool noIp { get; set; }
+    public string? enforceTls { get; set; }
+    public string? noIp { get; set; }
 
     public override bool Equals(object? obj)
     {
