@@ -21,7 +21,7 @@ public class MiddleWareService implements MiddleWare {
 
     @Override
     public boolean timeStampValidator(final Long timeStamp) {
-        final long currentTime = System.currentTimeMillis();
+        final long currentTime = System.currentTimeMillis() / 1000;
 
         if (timeStamp - currentTime < -60000 ||
                 timeStamp - currentTime > 120000) {

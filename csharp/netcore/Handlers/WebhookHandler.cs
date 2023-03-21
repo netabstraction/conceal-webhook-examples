@@ -10,14 +10,32 @@ public class PostProcessWebhook : ResponseHandler<ConcealRequest, ConcealRespons
     private static SignatureValidator signatureValidator = new SignatureValidator();
     private static TimeStampValidator timeStampValidator = new TimeStampValidator();
     private static ApiKeyValidator apiKeyValidator = new ApiKeyValidator();
-    
+
     [HttpPost]
-    public override Task<ConcealResponse> Handle(
+    public override async Task<ConcealResponse> Handle(
         [FromBody] ConcealRequest request,
-        [FromHeader(Name = "X-Api-Key")] string apiKey, 
-        [FromHeader(Name = "X-Signature")] string signature, 
-        [FromHeader(Name = "X-TimeStamp")] long timeStamp)
+        [FromHeader(Name = "x-api-key")] string apiKey,
+        [FromHeader(Name = "conceal_signature")] string signature,
+        [FromHeader(Name = "conceal_timestamp")] long timeStamp)
     {
-        throw new NotImplementedException();
+
+
+        if (!apiKeyValidator.Validate(apiKey, signature, timeStamp))
+        {
+            return await Task.FromResult(new ConcealResponse("API Key missing/API Key doesnot match", 401));
+        }
+
+        if (!timeStampValidator.Validate(apiKey, signature, timeStamp))
+        {
+            return await Task.FromResult(new ConcealResponse("Invalid Timestamp. Timestamp not in range", 400));
+        }
+
+        if (!signatureValidator.Validate(apiKey, signature, timeStamp))
+        {
+            return await Task.FromResult(new ConcealResponse("Invalid Signature", 400));
+        }
+
+        return await Task.FromResult(new ConcealResponse("SUCCESS", 200));
+
     }
 }
