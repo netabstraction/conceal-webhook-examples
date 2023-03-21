@@ -14,4 +14,9 @@ public class ConcealResponse
 
     public string? message { get; set; }
     public int? status { get; set; }
+
+    public override String ToString()
+    {
+        return $"{{\"message\": \"{message}\", \"status\": {status}}}";
+    }
 }

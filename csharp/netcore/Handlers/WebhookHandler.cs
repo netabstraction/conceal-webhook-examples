@@ -35,7 +35,8 @@ public class PostProcessWebhook : ResponseHandler<ConcealRequest, ConcealRespons
             return await Task.FromResult(new ConcealResponse("Invalid Signature", 400));
         }
 
-        return await Task.FromResult(new ConcealResponse("SUCCESS", 200));
+        // DEMO: Print the payload
+        return await Task.FromResult(new ConcealResponse(request.ToString(), 200));
 
     }
 }

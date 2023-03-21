@@ -53,4 +53,9 @@ public class ConcealRequest
         hash.Add(timeStamp);
         return hash.ToHashCode();
     }
+
+    public override string ToString()
+    {
+        return $"{{\"event\": \"{Event}\", \"host\": {host}, \"sourceType\": {sourceType}, \"compantId\": {compantId}, \"companyName\": {companyName}, \"userEmail\": {userEmail}, \"userId\": {userId}, \"url\": {url}, \"count\": {count}, \"decision\": {decision}, \"finalDecision\": {finalDecision}, \"timeStamp\": {timeStamp}}}";
+    }
 }

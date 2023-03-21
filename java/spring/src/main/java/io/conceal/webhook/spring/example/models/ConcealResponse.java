@@ -4,6 +4,10 @@ public class ConcealResponse {
     
     private String message;
 
+    public ConcealResponse(String message) {
+        this.message = message;
+    }
+
     public ConcealResponse() {
     }
 

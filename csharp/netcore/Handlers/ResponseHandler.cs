@@ -6,5 +6,5 @@ namespace csharp.netcore.Handlers;
 public abstract class ResponseHandler<TRequest, TResponse>
 {
     [HttpPost, Route("")]
-    public abstract Task<TResponse> Handle([FromBody] TRequest request, [FromHeader(Name = "X-Api-Key")] string apiKey, [FromHeader(Name = "X-Signature")] string signature, [FromHeader(Name = "X-TimeStamp")] long timeStamp);
+    public abstract Task<TResponse> Handle([FromBody] TRequest request, [FromHeader(Name = "x-api-key")] string apiKey, [FromHeader(Name = "conceal_signature")] string signature, [FromHeader(Name = "conceal_timeStamp")] long timeStamp);
 }

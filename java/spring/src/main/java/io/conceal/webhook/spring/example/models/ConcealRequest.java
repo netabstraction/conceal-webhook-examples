@@ -167,4 +167,11 @@ public class ConcealRequest {
             return false;
         return true;
     }
+    @Override
+    public String toString() {
+        return "ConcealRequest [event=" + event + ", host=" + host + ", sourceType=" + sourceType + ", companyId="
+                + companyId + ", companyName=" + companyName + ", userEmail=" + userEmail + ", userId=" + userId
+                + ", url=" + url + ", count=" + count + ", decision=" + decision + ", finalDecision=" + finalDecision
+                + ", timeStamp=" + timeStamp + "]";
+    }
 }
