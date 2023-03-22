@@ -5,7 +5,7 @@
 `make run `
 
 ## The application exposes following webhook
-`http://127.0.0.1:4002/nodejs/express-ts/api-key-signature-protected`
+`http://127.0.0.1:5097/api-key-signature-protected`
 
 ## Webhook Method
 POST
