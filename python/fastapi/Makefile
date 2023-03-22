@@ -1,5 +1,5 @@
 build:
-	bundle install
+	pip3 install -r requirements.txt
 
 run:
-	bin/rails server
+	python3 -m uvicorn main:app --reload --port 4004
