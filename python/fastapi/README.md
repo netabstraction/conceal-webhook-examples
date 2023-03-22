@@ -1,6 +1,6 @@
 ## Requirement
-ruby
-rails
+python (version 3.11+)
+pip (version 3.11+)
 
 ## Build the application
 `make build` 
@@ -9,7 +9,7 @@ rails
 `make run`
 
 ## The application exposes following webhook
-`http://127.0.0.1:3000/ruby/rails/api-key-signature-protected`
+`http://127.0.0.1:4004/python/fastapi/api-key-signature-protected`
 
 ## Webhook Method
 POST
