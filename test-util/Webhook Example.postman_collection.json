@@ -35,12 +35,12 @@
 						"type": "text"
 					},
 					{
-						"key": "conceal_timestamp",
+						"key": "conceal-timestamp",
 						"value": "{{conceal_timestamp}}",
 						"type": "text"
 					},
 					{
-						"key": "conceal_signature",
+						"key": "conceal-signature",
 						"value": "{{conceal_signature}}",
 						"type": "text"
 					}
