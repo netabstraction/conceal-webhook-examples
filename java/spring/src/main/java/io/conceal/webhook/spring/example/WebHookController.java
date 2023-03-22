@@ -31,8 +31,8 @@ public class WebHookController {
     public ResponseEntity<ConcealResponse> respondToConceal(
         @RequestBody final ConcealRequest payload,
         @RequestHeader("x-api-key") final String apiKey,
-        @RequestHeader("conceal_timestamp") final String timeStamp,
-        @RequestHeader("conceal_signature") final String signature ) throws IllegalArgumentException {
+        @RequestHeader("conceal-timestamp") final String timeStamp,
+        @RequestHeader("conceal-signature") final String signature ) throws IllegalArgumentException {
 
             if (!middleWareService.apiKeyValidator(apiKey)) {
                 return new ResponseEntity<>(new ConcealResponse("API Key missing/API Key doesnot match"), HttpStatus.UNAUTHORIZED);

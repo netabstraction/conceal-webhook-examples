@@ -15,8 +15,8 @@ public class PostProcessWebhook : ResponseHandler<ConcealRequest, ConcealRespons
     public override async Task<ConcealResponse> Handle(
         [FromBody] ConcealRequest request,
         [FromHeader(Name = "x-api-key")] string apiKey,
-        [FromHeader(Name = "conceal_signature")] string signature,
-        [FromHeader(Name = "conceal_timestamp")] long timeStamp)
+        [FromHeader(Name = "conceal-signature")] string signature,
+        [FromHeader(Name = "conceal-timestamp")] long timeStamp)
     {
 
 
