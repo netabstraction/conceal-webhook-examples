@@ -23,5 +23,5 @@ POST
 
 ## Verification in api
 * API Key and value is verified
-* conceal_timestamp from request header is verified that is is within range [-60secs, +120secs]
-* `cocneal_signature` from request header is verified that it is correctly generated. `conceal_signature` is a HMAC signature of the request using SHA256 hashing algoithm. To match the signature, build a string with `conceal_timestamp|webhook_address` That string is then signed with Signature Keyusing SHA256 hashing algoithm.
+* conceal-timestamp from request header is verified that is is within range [-60secs, +120secs]
+* `cocneal-signature` from request header is verified that it is correctly generated. `conceal-signature` is a HMAC signature of the request using SHA256 hashing algoithm. To match the signature, build a string with `conceal-timestamp|webhook-address` That string is then signed with Signature Keyusing SHA256 hashing algoithm.
