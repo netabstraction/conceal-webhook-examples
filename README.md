@@ -1,7 +1,6 @@
 # conceal-webhook-examples
 
 
-
 # Testing your webhook 
 
 ## Postman
@@ -16,8 +15,8 @@ const signatureKey = postman.getGlobalVariable("signature-key")
 const message = `${currentTimestamp}|${webhookUrl}`;
 const signature = CryptoJS.HmacSHA256(message, signatureKey);
 
-postman.setGlobalVariable("conceal_signature", signature );
-postman.setGlobalVariable("conceal_timestamp", currentTimestamp);
+postman.setGlobalVariable("conceal-signature", signature );
+postman.setGlobalVariable("conceal-timestamp", currentTimestamp);
 ```
 * Set `signature-key` and `webhookUrl` in environment variable
 
