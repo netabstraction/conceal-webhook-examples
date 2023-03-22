@@ -8,10 +8,22 @@ class WebhookController < ApplicationController
 
 
     def index
-        puts "Received Request"
 
+        # Logging the request
+        http_envs = {}.tap do |envs|
+            request.headers.each do |key, value|
+                envs[key] = value if key.downcase.starts_with?('http')
+            end
+        end
+        logger.info "REQUEST"
+        logger.info "URL: " + request.url.inspect
+        logger.info "Method: " + request.method.inspect
+        logger.info "Header: " + http_envs.inspect
+        logger.info "Body: " + params.inspect
+       
         # Api key validation
         if request.headers[API_KEY_CONST] != API_KEY_VALUE_CONST
+            logger.info 'Missing/Invalid API Key'
             return render json: { error: 'Missing/Invalid API Key'}, status: :unauthorized
         end
 
@@ -20,6 +32,7 @@ class WebhookController < ApplicationController
         request_timestamp_int = request_timestamp.to_i
         current_timestamp = Time.now.to_i 
         if (request_timestamp_int - current_timestamp < -60000 or request_timestamp_int - current_timestamp > 12000)
+            logger.info 'Missing/Invalid Timestamp. Timestamp out of range'
             return render json: { error: 'Missing/Invalid Timestamp. Timestamp out of range'}, status: :bad_request
         end
 
@@ -28,10 +41,12 @@ class WebhookController < ApplicationController
         message = "#{request_timestamp}|#{WEBHOOK_URL_CONST}"
         digester  = OpenSSL::Digest::Digest.new("sha256")
         signature = OpenSSL::HMAC.hexdigest(digester, SIGNATURE_KEY_CONST, message)
-        puts request_signature
-        puts signature
-        puts message
+        logger.info "Signature Message: " + message
+        logger.info "Request Signature: " + request_signature
+        logger.info "Calculated Signature: " + signature
+        
         if request_signature != signature
+            logger.info 'Missing/Invalid Signature.'
             return render json: { error: 'Missing/Invalid Signature.'}, status: :unauthorized
         end
         
