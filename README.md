@@ -1,9 +1,29 @@
 # conceal-webhook-examples
+Webhook examples verify following information for validation. 
+
+## Verification in api
+* API Key and value is verified
+* conceal-timestamp from request header is verified that is is within range [-60secs, +120secs]
+* `cocneal-signature` from request header is verified that it is correctly generated. `conceal-signature` is a HMAC signature of the request using SHA256 hashing algoithm. To match the signature, build a string with `conceal-timestamp|webhook-address` That string is then signed with Signature Keyusing SHA256 hashing algoithm.
+
+## List of examples
+* charp
+  * netcore
+* go
+  * echo
+  * gin
+  * nethttp
+* java
+  * spring
+* nodejs
+  * express
+  * express-ts
+* python
+  * django
+  * fastapi
 
 
-# Testing your webhook 
-
-## Postman
+## Testing your webhook using postman
 
 Check this [Postman Script](/test-util/Webhook Example.postman_collection.json)
 
