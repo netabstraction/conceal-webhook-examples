@@ -7,7 +7,7 @@ Webhook examples verify following information for validation.
 * `cocneal-signature` from request header is verified that it is correctly generated. `conceal-signature` is a HMAC signature of the request using SHA256 hashing algoithm. To match the signature, build a string with `conceal-timestamp|webhook-address` That string is then signed with Signature Keyusing SHA256 hashing algoithm.
 
 ## List of examples
-* charp
+* c#
   * netcore
 * go
   * echo
@@ -25,9 +25,7 @@ Webhook examples verify following information for validation.
 
 ## Testing your webhook using postman
 
-Check this [Postman Script](/test-util/Webhook Example.postman_collection.json)
-
-* Add following script to prerequest script
+Add following script to prerequest script
 ```
 const currentTimestamp = Math.floor(Date.now() / 1000);
 const webhookUrl = postman.getGlobalVariable("webhookUrl");
@@ -61,3 +59,5 @@ postman.setGlobalVariable("conceal-timestamp", currentTimestamp);
     "timestamp": 1678113806
 }
 ```
+
+Check this exported [Postman Example](../test-util/Webhook_Example.postman_collection.json)
