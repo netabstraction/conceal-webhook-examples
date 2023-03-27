@@ -1,68 +1,80 @@
+from pickle import FALSE
 import time
 import hmac
 import hashlib
-import json
 
 from hmac import compare_digest
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 
 
 SIGNATURE_KEY_CONST = "signature-key"
 API_KEY_CONST = "x-api-key"
 API_KEY_VALUE_CONST = "sample-key"
-WEBHOOK_URL_CONST = "http://127.0.0.1:4004/python/fastapi/api-key-signature-protected"
+WEBHOOK_URL_CONST = "http://127.0.0.1:8080/webhook"
 
 app = FastAPI()
 
+@app.post("/webhook")
+async def webhook_api(request: Request):
 
-@app.middleware("api_key_validator")
-async def add_api_key_validator(request: Request, call_next):
-    api_key_header = request.headers.get(API_KEY_CONST)
-    if not (compare_digest(api_key_header, API_KEY_VALUE_CONST)):
+    request_timestamp = request.headers.get("conceal-timestamp")
+    request_signature = request.headers.get("conceal-signature")
+    request_api_key = request.headers.get(API_KEY_CONST)
+
+    # Api Key validation
+    if not (compare_digest(request_api_key, API_KEY_VALUE_CONST)):
         print("Invalid Key")
         return JSONResponse(content="Invalid Key", status_code=401)
 
-    return await call_next(request)
+    # Timestamp validation
+    if not (is_valid_timestamp(request_timestamp)):
+        print("Invalid Timestamp")
+        return JSONResponse(content="Invalid Timestamp", status_code=400)
 
-
-@app.middleware("signature_validator")
-async def add_signature_validator(request: Request, call_next):
-
-    request_time = int(request.headers.get("conceal-timestamp"))
-    request_signature = request.headers.get("conceal-signature")
-    message = '{}|{}'.format(request_time, WEBHOOK_URL_CONST)
-    signature = hmac.new(bytes(SIGNATURE_KEY_CONST, 'utf-8'),
-                         msg=bytes(message, 'utf-8'), digestmod=hashlib.sha256).hexdigest()
-    if signature != request_signature:
+    # Signature validation
+    if not (is_valid_signature(request_timestamp, request_signature)):
         print("Invalid Signature")
         return JSONResponse(content="Invalid Signature", status_code=401)
 
-    return await call_next(request)
+    # Validate json body
+    try:
+        body = await request.json()
+    except:
+        print("Invalid Body")
+        return JSONResponse(content="Invalid Body", status_code=400)
+   
+    # Process the webhook payload
+    # ..
+    await request_log(request)
+    # ..
 
+    # Return a success response
+    print("OK")
+    return JSONResponse(content="", status_code=200)
 
-@app.middleware("timestamp_validator")
-async def add_timestamp_validator(request: Request, call_next):
-    current_time = int(time.time())
-    request_time = int(request.headers.get("conceal-timestamp"))
-    if (request_time - current_time < -60000 or request_time - current_time > 12000):
-        print("Invalid Timestamp. Timestamp not in range")
-        return JSONResponse(content="Invalid Timestamp. Timestamp not in range", status_code=400)
+# Validate timestamp timestamp is in the range of [current_timestamp-60sec, current_timestamp_120sec]
+def is_valid_timestamp(request_timestamp: any):
+    if(request_timestamp is None):
+        return False
+    
+    try:
+        request_timestamp_int = int(request_timestamp)
+    except:
+        return False
 
-    return await call_next(request)
+    current_timestamp = int(time.time())
+    return (request_timestamp_int - current_timestamp > -60000 and request_timestamp_int - current_timestamp < 12000)
 
+# Validate signature
+def is_valid_signature(request_timestamp: any, request_signature: any):
+    message = '{}|{}'.format(request_timestamp, WEBHOOK_URL_CONST)
+    signature = hmac.new(bytes(SIGNATURE_KEY_CONST, 'utf-8'),
+                         msg=bytes(message, 'utf-8'), digestmod=hashlib.sha256).hexdigest()
+    return signature == request_signature
 
-@app.middleware("logger")
-async def add_api_key_validator(request: Request, call_next):
-    print("REQUEST")
-    print("Url: ", request.url)
-    print("Method: ", request.method)
-    print("Header: ", request.headers)
-    print("Body: ", await request.json())
-    return await call_next(request)
-
-
-@app.post("/python/fastapi/api-key-signature-protected")
-async def webhook_api():
-    print("200 OK")
-    return {"ok": "true"}
+# Log request
+async def request_log(request: Request):
+    print("req [{method}] {url}".format(method = request.method, url = request.url))
+    print("headers: ", request.headers)
+    print("body: ", await request.json())
