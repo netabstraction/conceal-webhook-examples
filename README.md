@@ -21,6 +21,8 @@ Webhook examples verify following information for validation.
 * python
   * django
   * fastapi
+* ruby
+  * rails
 
 
 ## Testing your webhook using postman
