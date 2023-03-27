@@ -7,108 +7,106 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"strconv"
 	"time"
 )
 
-type application struct {
-}
-
-const signatureKeyConst = "signature-key"
-const apiKeyKeyConst = "x-api-key"
-const apiKeyValueConst = "sample-key"
+const (
+	signatureKeyConst = "signature-key"
+	apiKeyKeyConst    = "x-api-key"
+	apiKeyValueConst  = "sample-key"
+	webhookAddress    = "http://127.0.0.1:8080/webhook"
+)
 
 func main() {
 
-	mux := http.NewServeMux()
-	mux.HandleFunc("/go/nethttp/api-key-signature-protected", apiKeyAuth(signatureAuth(webhookPluginAPI)))
+	// Create a new HTTP server
+	http.HandleFunc("/webhook", handleWebhook)
 
-	srv := &http.Server{
-		Addr:         ":4000",
-		Handler:      mux,
-		IdleTimeout:  time.Minute,
-		ReadTimeout:  10 * time.Second,
-		WriteTimeout: 30 * time.Second,
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
 	}
 
-	log.Printf("starting server on %s", srv.Addr)
-	err := srv.ListenAndServe()
-	log.Fatal(err)
+	log.Printf("Server listening on port %s", port)
+	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%s", port), nil))
 }
 
 // Exposed protected handler
-func webhookPluginAPI(w http.ResponseWriter, r *http.Request) {
-	logRequest(r, "200 OK")
+func handleWebhook(w http.ResponseWriter, r *http.Request) {
+
+	requestApiKey := r.Header.Get(apiKeyKeyConst)
+	requestTimestamp := r.Header.Get("conceal-timestamp")
+	requestSignature := r.Header.Get("conceal-signature")
+
+	//Api Key validation
+	if requestApiKey != apiKeyValueConst {
+		log.Printf("Invalid API Key")
+		http.Error(w, "Invalid API Key", http.StatusUnauthorized)
+		return
+	}
+
+	//Timestamp validation
+	if !isValidTimestamp(requestTimestamp) {
+		log.Printf("Invalid Timestamp")
+		http.Error(w, "Invalid Timestamp", http.StatusBadRequest)
+		return
+	}
+
+	//Signature validation
+	if !isValidSignature(requestTimestamp, requestSignature) {
+		log.Printf("Invalid Signature")
+		http.Error(w, "Invalid Signature", http.StatusUnauthorized)
+		return
+	}
+
+	// Process the webhook payload
+	// ..
+	logRequest(w, r)
+	// ..
+
+	// Return a success response
+	log.Printf("OK")
 	w.WriteHeader(http.StatusOK)
 	return
 }
 
-// Verify api key and timestamp
-func apiKeyAuth(next http.HandlerFunc) http.HandlerFunc {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+// Validate timestamp timestamp is in the range of [current_timestamp-60sec, current_timestamp_120sec]
+func isValidTimestamp(requestTimestamp string) bool {
+	requestTimestampInt, err := strconv.ParseInt(requestTimestamp, 10, 64)
+	currentTimestamp := time.Now().Unix()
+	if err != nil {
+		return false
+	}
+	log.Printf(fmt.Sprintf("Time Diff: %d", requestTimestampInt-currentTimestamp))
+	if requestTimestampInt-currentTimestamp < -60000 || requestTimestampInt-currentTimestamp > 120000 {
+		return false
+	}
 
-		// Match api key from request header
-		apiKeyMatch := r.Header.Get(apiKeyKeyConst) == apiKeyValueConst
-
-		if !apiKeyMatch {
-			logRequest(r, "Api key auth Failed")
-			w.Header().Set("WWW-Authenticate", `Basic realm="restricted", charset="UTF-8"`)
-			http.Error(w, "Invalid API Key", http.StatusUnauthorized)
-		}
-
-		// Check request timestamp is in the range of [current_timestamp-60sec, current_timestamp_120sec]
-		requestTimestamp, err := strconv.ParseInt(r.Header.Get("conceal_timestamp"), 10, 64)
-		currentTimestamp := time.Now().Unix()
-		if err != nil {
-			logRequest(r, "Invalid Timestamp")
-			w.Header().Set("WWW-Authenticate", `Basic realm="restricted", charset="UTF-8"`)
-			http.Error(w, "Invalid Timestamp", http.StatusBadRequest)
-		}
-		log.Println(fmt.Sprintf("Time Diff: %d", requestTimestamp-currentTimestamp))
-		if requestTimestamp-currentTimestamp < -60000 || requestTimestamp-currentTimestamp > 120000 {
-			logRequest(r, "Invalid Timestamp. Timestamp out of range")
-			w.Header().Set("WWW-Authenticate", `Basic realm="restricted", charset="UTF-8"`)
-			http.Error(w, "Invalid Timestamp. Timestamp out of range", http.StatusBadRequest)
-		}
-
-		next.ServeHTTP(w, r)
-		return
-	})
+	return true
 }
 
-// Verify signature value
-func signatureAuth(next http.HandlerFunc) http.HandlerFunc {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+// Validate signature
+func isValidSignature(requestTimestamp string, requestSignature string) bool {
 
-		timestamp := r.Header.Get("conceal_timestamp")
-		messageSignature := r.Header.Get("conceal_signature")
+	message := fmt.Sprintf("%s|%s", requestTimestamp, webhookAddress)
+	hasher := hmac.New(sha256.New, []byte(signatureKeyConst))
+	hasher.Write([]byte(message))
+	sha := fmt.Sprintf("%x", hasher.Sum(nil))
 
-		message := fmt.Sprintf("%s|%s://%s%s", timestamp, "http", r.Host, r.URL.Path)
-		hasher := hmac.New(sha256.New, []byte(signatureKeyConst))
-		hasher.Write([]byte(message))
-		sha := fmt.Sprintf("%x", hasher.Sum(nil))
-
-		signatureMatch := sha == messageSignature
-
-		if !signatureMatch {
-			logRequest(r, "Signature auth Failed")
-			w.Header().Set("WWW-Authenticate", `Basic realm="restricted", charset="UTF-8"`)
-			http.Error(w, "Invalid Signature", http.StatusUnauthorized)
-		}
-
-		next.ServeHTTP(w, r)
-		return
-	})
+	return sha == requestSignature
 }
 
-func logRequest(r *http.Request, tag string) {
+// Log request
+func logRequest(w http.ResponseWriter, r *http.Request) {
 	var body map[string]interface{}
-	json.NewDecoder(r.Body).Decode(&body)
-
-	log.Println(fmt.Sprintf("Request Status: %s", tag))
-	log.Println("REQUEST")
-	log.Println(fmt.Sprintf("Url : %s?%s", r.URL, r.URL.RawQuery))
-	log.Println(fmt.Sprintf("Method : %s", r.Method))
-	log.Println(fmt.Sprintf("Header : %s", r.Header))
-	log.Println(fmt.Sprintf("Body: %s", body))
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		log.Printf("Invalid Body")
+		http.Error(w, "Invalid Body", http.StatusUnauthorized)
+		return
+	}
+	log.Printf(fmt.Sprintf("req [%s] %s", r.Method, r.URL))
+	log.Printf(fmt.Sprintf("headers : %s", r.Header))
+	log.Printf(fmt.Sprintf("body: %v", body))
 }
