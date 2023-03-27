@@ -33,7 +33,7 @@ func main() {
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%s", port), nil))
 }
 
-// Exposed protected handler
+// Exposed Webhook
 func handleWebhook(w http.ResponseWriter, r *http.Request) {
 
 	requestApiKey := r.Header.Get(apiKeyKeyConst)
