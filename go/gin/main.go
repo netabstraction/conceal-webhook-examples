@@ -16,85 +16,86 @@ import (
 type application struct {
 }
 
-const signatureKeyConst = "signature-key"
-const apiKeyValueConst = "sample-key"
+const (
+	signatureKeyConst = "signature-key"
+	apiKeyValueConst  = "sample-key"
+	apiKeyKeyConst    = "x-api-key"
+	webhookAddress    = "http://127.0.0.1:8080/webhook"
+)
 
 func main() {
 	router := gin.New()
 
-	// signature middleware
-	router.Use(signatureAuth)
-	// api key auth
-	router.Use(apiKeyAuth)
-
 	// routes
-	router.POST("/go/gin/api-key-signature-protected", protectedHandler)
+	router.POST("/webhook", handleWebhook)
 
-	log.Printf("starting server on %s", ":4000")
-	router.Run("localhost:4000")
+	log.Printf("starting server on %s", ":8080")
+	router.Run("127.0.0.1:8080")
 }
 
-// Exposed protected handler
-func protectedHandler(c *gin.Context) {
-	logRequest(c, "200 OK")
-	c.IndentedJSON(http.StatusOK, gin.H{"msg": "200 Ok"})
-	c.Next()
-}
+func handleWebhook(c *gin.Context) {
+	requestApiKey := c.Request.Header.Get(apiKeyKeyConst)
+	requestTimestamp := c.Request.Header.Get("conceal-timestamp")
+	requestSignature := c.Request.Header.Get("conceal-signature")
 
-func apiKeyAuth(c *gin.Context) {
-	apiKeyMatch := c.Request.Header.Get("x-api-key") == apiKeyValueConst
-
-	if !apiKeyMatch {
-		logRequest(c, "Api key auth failed")
-		c.Writer.Header().Set("WWW-Authenticate", `Basic realm="restricted", charset="UTF-8"`)
+	// API Key Validation
+	if requestApiKey != apiKeyValueConst {
+		log.Printf("Invalid API Key")
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": "Invalid API Key"})
 		c.Abort()
 		return
 	}
 
-	requestTimestamp, err := strconv.ParseInt(c.Request.Header.Get("conceal-timestamp"), 10, 64)
-	if err != nil {
-		logRequest(c, "Invalid timestamp")
-		c.Writer.Header().Set("WWW-Authenticate", `Basic realm="restricted", charset="UTF-8"`)
-		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": "Invalid timestamp"})
+	// Timestamp Validation
+	if !isValidTimestamp(requestTimestamp) {
+		log.Printf("Invalid Timestamp")
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"err": "Invalid Timestamp"})
 		c.Abort()
 		return
 	}
 
-	currentTimestamp := time.Now().Unix()
-
-	if requestTimestamp-currentTimestamp < -60000 || requestTimestamp-currentTimestamp > 120000 {
-		logRequest(c, "Invalid timestamp. Timestamp out of range")
-		c.Writer.Header().Set("WWW-Authenticate", `Basic realm="restricted", charset="UTF-8"`)
-		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": "Invalid timestamp. Timestamp out of range"})
+	// Signature Validation
+	if !isValidSignature(requestTimestamp, requestSignature) {
+		log.Printf("Invalid Signature")
+		c.IndentedJSON(http.StatusUnauthorized, gin.H{"err": "Invalid Signature"})
 		c.Abort()
 		return
 	}
+
+	logRequest(c)
+
+	log.Printf("OK")
+	c.IndentedJSON(http.StatusOK, gin.H{"status": "OK"})
+	c.Next()
 }
 
-func signatureAuth(c *gin.Context) {
-	timestamp := c.Request.Header.Get("conceal-timestamp")
-	messageSignature := c.Request.Header.Get("conceal-signature")
+// Validate timestamp. Timestamp is in the range of [current_timestamp-60sec, current_timestamp_120sec]
+func isValidTimestamp(requestTimestamp string) bool {
+	requestTimestampInt, err := strconv.ParseInt(requestTimestamp, 10, 64)
+	currentTimestamp := time.Now().Unix()
+	if err != nil {
+		return false
+	}
 
-	message := fmt.Sprintf("%s|%s://%s%s", timestamp, "http", c.Request.Host, c.Request.URL.Path)
+	log.Printf(fmt.Sprintf("Time Diff: %d", requestTimestampInt-currentTimestamp))
+	if requestTimestampInt-currentTimestamp < -60000 || requestTimestampInt-currentTimestamp > 120000 {
+		return false
+	}
+
+	return true
+}
+
+// Validate Signature
+func isValidSignature(requestTimestamp string, requestSignature string) bool {
+	message := fmt.Sprintf("%s|%s", requestTimestamp, webhookAddress)
 	hasher := hmac.New(sha256.New, []byte(signatureKeyConst))
 	hasher.Write([]byte(message))
 	sha := fmt.Sprintf("%x", hasher.Sum(nil))
 
-	signatureMatch := sha == messageSignature
-
-	if !signatureMatch {
-		logRequest(c, "Signature auth failed")
-		c.Writer.Header().Set("WWW-Authenticate", `Basic realm="restricted", charset="UTF-8"`)
-		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": "Invalid signature"})
-		c.Abort()
-		return
-	}
+	return sha == requestSignature
 }
 
-func logRequest(c *gin.Context, tag string) {
-	log.Println("Got a new request " + tag)
-
+func logRequest(c *gin.Context) {
 	requestDump, err := httputil.DumpRequest(c.Request, true)
 	if err != nil {
 		log.Println(err)
