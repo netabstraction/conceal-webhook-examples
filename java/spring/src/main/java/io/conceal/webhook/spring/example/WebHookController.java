@@ -2,6 +2,7 @@ package io.conceal.webhook.spring.example;
 
 import java.io.Console;
 
+import org.apache.commons.codec.digest.HmacUtils;
 import org.apache.commons.logging.Log;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
@@ -23,9 +24,6 @@ import io.conceal.webhook.spring.example.models.ConcealResponse;
 @SpringBootApplication
 public class WebHookController {
 
-    @Autowired
-    private MiddleWareService middleWareService;
-
     @PostMapping("/api-key-signature-protected")
     @ResponseBody
     public ResponseEntity<ConcealResponse> respondToConceal(
@@ -34,15 +32,15 @@ public class WebHookController {
         @RequestHeader("conceal-timestamp") final String timeStamp,
         @RequestHeader("conceal-signature") final String signature ) throws IllegalArgumentException {
 
-            if (!middleWareService.apiKeyValidator(apiKey)) {
+            if (!apiKeyValidator(apiKey)) {
                 return new ResponseEntity<>(new ConcealResponse("API Key missing/API Key doesnot match"), HttpStatus.UNAUTHORIZED);
             }
 
-            if (!middleWareService.timeStampValidator(Long.parseLong(timeStamp))) {
+            if (!timeStampValidator(Long.parseLong(timeStamp))) {
                 return new ResponseEntity<>(new ConcealResponse("Invalid Timestamp. Timestamp not in range"), HttpStatus.BAD_REQUEST);
             }
 
-            if (!middleWareService.signatureValidator(timeStamp, signature)) {
+            if (!signatureValidator(timeStamp, signature)) {
                 return new ResponseEntity<>(new ConcealResponse("Invalid Signature"), HttpStatus.BAD_REQUEST);
             }
 
@@ -54,5 +52,38 @@ public class WebHookController {
         SpringApplication.run(WebHookController.class, args);
     }
     
+    private static final String SIGNATURE_KEY_CONSTANT = "signature-key";
+    private static final String API_VALUE_CONSTANT = "sample-key";
+    private static final String WEB_HOOK_URL = "http://localhost:8080/api-key-signature-protected";
+
+    private boolean apiKeyValidator(final String apiKey) {
+        if (apiKey == null || !apiKey.equals(API_VALUE_CONSTANT)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    private boolean timeStampValidator(final Long timeStamp) {
+        final long currentTime = System.currentTimeMillis() / 1000;
+
+        if (timeStamp - currentTime < -60000 ||
+                timeStamp - currentTime > 120000) {
+            return false;
+        }
+
+        return true;
+    }
+
+    private boolean signatureValidator(final String timeStamp, final String signature) {
+        final String messasge = timeStamp + WEB_HOOK_URL;
+        final String expextedSignature = HmacUtils.hmacSha256Hex(SIGNATURE_KEY_CONSTANT, messasge);
+
+        if (signature != null && signature.equals(expextedSignature)) {
+            return false;
+        }
+
+        return true;
+    }
 }
 
