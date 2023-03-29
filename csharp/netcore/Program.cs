@@ -1,4 +1,3 @@
-using csharp.netcore.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,7 +22,5 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 
 app.MapControllers();
-
-app.UseMiddleware<Middleware>();
 
 app.Run();
