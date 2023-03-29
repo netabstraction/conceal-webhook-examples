@@ -5,7 +5,7 @@
 `make run `
 
 ## The application exposes following webhook
-`http://127.0.0.1:8080/api-key-signature-protected`
+`http://127.0.0.1:8080/webhook`
 
 ## Webhook Method
 POST

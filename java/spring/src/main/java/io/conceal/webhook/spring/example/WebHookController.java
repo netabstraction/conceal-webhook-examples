@@ -24,7 +24,7 @@ import io.conceal.webhook.spring.example.models.ConcealResponse;
 @SpringBootApplication
 public class WebHookController {
 
-    @PostMapping("/api-key-signature-protected")
+    @PostMapping("/webhook")
     @ResponseBody
     public ResponseEntity<ConcealResponse> respondToConceal(
         @RequestBody final ConcealRequest payload,
@@ -54,7 +54,7 @@ public class WebHookController {
     
     private static final String SIGNATURE_KEY_CONSTANT = "signature-key";
     private static final String API_VALUE_CONSTANT = "sample-key";
-    private static final String WEB_HOOK_URL = "http://localhost:8080/api-key-signature-protected";
+    private static final String WEB_HOOK_URL = "http://localhost:8080/webhook";
 
     private boolean apiKeyValidator(final String apiKey) {
         if (apiKey == null || !apiKey.equals(API_VALUE_CONSTANT)) {
@@ -77,9 +77,9 @@ public class WebHookController {
 
     private boolean signatureValidator(final String timeStamp, final String signature) {
         final String messasge = timeStamp + WEB_HOOK_URL;
-        final String expextedSignature = HmacUtils.hmacSha256Hex(SIGNATURE_KEY_CONSTANT, messasge);
+        final String expectedSignature = HmacUtils.hmacSha256Hex(SIGNATURE_KEY_CONSTANT, messasge);
 
-        if (signature != null && signature.equals(expextedSignature)) {
+        if (signature != null && signature.equals(expectedSignature)) {
             return false;
         }
 

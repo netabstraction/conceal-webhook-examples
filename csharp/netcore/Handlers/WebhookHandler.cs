@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace csharp.netcore.Handlers;
 
-[Route("api-key-signature-protected")]
+[Route("webhook")]
 public class PostProcessWebhook : ResponseHandler<ConcealRequest, ConcealResponse>
 {
 
