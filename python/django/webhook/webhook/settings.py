@@ -49,10 +49,6 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'webhook_api.middleware.LoggerMiddleware',
-    'webhook_api.middleware.APIKeyValidator',
-    'webhook_api.middleware.SignatureValidator',
-    'webhook_api.middleware.TimestampValidator',
 ]
 
 ROOT_URLCONF = 'webhook.urls'
