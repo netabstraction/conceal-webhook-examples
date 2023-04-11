@@ -5,6 +5,9 @@
 **/vendor
 **/.bundle
 *.pyc
+**/.metals
+**/scala/target
+**/.mvn
 
 # dependencies
 **/node_modules
