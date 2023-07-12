@@ -30,6 +30,7 @@ func main() {
 	router.POST("/webhook", handleWebhook)
 
 	log.Printf("starting server on %s", ":8080")
+	router.SetTrustedProxies([]string{"127.0.0.1"})
 	router.Run("127.0.0.1:8080")
 }
 
