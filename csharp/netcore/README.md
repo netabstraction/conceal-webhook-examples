@@ -1,24 +1,65 @@
-## Build the application
-`make build`
+Requirements
+--
 
-## Run the application
-`make run `
+* dotnet
 
-## The application exposes following webhook
-`http://127.0.0.1:5097/webhook`
+Build
+--
 
-## Webhook Method
-POST
+```bash
+make build
+```
 
-## API-KEY-AUTH value
-`key` : `x-api-key`
+Run
+--
 
-`value` : `sample-key`
+```bash
+make run
+```
 
-## Signature Key value
-`signature-key`
+Once ran the application exposes the following webhook
+`http://127.0.0.1:8080/webhook`
 
-## Verification in api
-* API Key and value is verified
-* conceal_timestamp from request header is verified that is is within range [-60secs, +120secs]
-* `cocneal-signature` from request header is verified that it is correctly generated. `conceal-signature` is a HMAC signature of the request using SHA256 hashing algoithm. To match the signature, build a string with `conceal-timestamp|webhook_address` That string is then signed with Signature Keyusing SHA256 hashing algoithm.
+Test
+--
+
+The example webhook can be tested using the included Postman collection `Webhook Example.postman_collection.json`.
+
+Verification
+--
+
+To validate the webhook is functioning properly ensure:
+
+1. The request returns a valid response
+
+```bash
+{
+    "status": "OK"
+}
+```
+
+2. The API key is being validated. If the `x-api-key` header does not match the expected `sample-key` value the following `400 Bad Request` error should be returned.
+
+```bash
+{
+    "error": "Invalid API Key"
+}
+```
+
+3. The signature is being validated. The `conceal-signature` header is an `HMAC` signature calculated using the string `<conceal-timestamp>|<webhook_address>` which is then signed using the value `signature-key` as the Signature Key for the `SHA256` hashing algorithm.
+
+   If the `conceal-signature` does not match the value calculated by the webhook the following `401 Unauthorized` error should be returned.
+
+```bash
+{
+    "error": "Invalid Signature"
+}
+```
+
+4. The timestamp is being validated. If the `conceal-timestamp` header is not within the range `[-60 secs, +120 secs]` then the following `400 Bad Request` error should be returned.
+
+```bash
+{
+    "error": "Invalid Timestamp"
+}
+```
