@@ -50,7 +50,7 @@ func handleWebhook(c *gin.Context) {
 	// Timestamp Validation
 	if !isValidTimestamp(requestTimestamp) {
 		log.Printf("Invalid Timestamp")
-		c.IndentedJSON(http.StatusBadRequest, gin.H{"err": "Invalid Timestamp"})
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": "Invalid Timestamp"})
 		c.Abort()
 		return
 	}
@@ -58,7 +58,7 @@ func handleWebhook(c *gin.Context) {
 	// Signature Validation
 	if !isValidSignature(requestTimestamp, requestSignature) {
 		log.Printf("Invalid Signature")
-		c.IndentedJSON(http.StatusUnauthorized, gin.H{"err": "Invalid Signature"})
+		c.IndentedJSON(http.StatusUnauthorized, gin.H{"error": "Invalid Signature"})
 		c.Abort()
 		return
 	}
