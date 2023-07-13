@@ -17,7 +17,7 @@ Run
 make run
 ```
 
-Once ran the application exposes the following webhook
+Application exposes webhook endpoint at address
 `http://127.0.0.1:8080/webhook`
 
 Test
