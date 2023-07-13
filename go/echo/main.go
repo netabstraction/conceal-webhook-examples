@@ -20,6 +20,14 @@ const (
 	webhookAddress    = "http://127.0.0.1:8080/webhook"
 )
 
+type Error struct {
+	Error string `json:"error"`
+}
+
+type Status struct {
+	Status string `json:"status"`
+}
+
 func main() {
 	// Echo instance
 	e := echo.New()
@@ -41,19 +49,20 @@ func handleWebhook(c echo.Context) error {
 	//Api Key validation
 	if requestApiKey != apiKeyValueConst {
 		log.Printf("Invalid API Key")
-		return c.String(http.StatusUnauthorized, "Invalid API Key")
+
+		return c.JSON(http.StatusUnauthorized, Error{Error: "Invalid API Key"})
 	}
 
 	//Timestamp validation
 	if !isValidTimestamp(requestTimestamp) {
 		log.Printf("Invalid Timestamp")
-		return c.String(http.StatusBadRequest, "Invalid Timestamp")
+		return c.JSON(http.StatusBadRequest, Error{Error: "Invalid Timestamp"})
 	}
 
 	//Signature validation
 	if !isValidSignature(requestTimestamp, requestSignature) {
 		log.Printf("Invalid Signature")
-		return c.String(http.StatusUnauthorized, "Invalid Signature")
+		return c.JSON(http.StatusUnauthorized, Error{Error: "Invalid Signature"})
 	}
 
 	// Process the webhook payload
@@ -63,7 +72,7 @@ func handleWebhook(c echo.Context) error {
 
 	// Return a success response
 	log.Printf("OK")
-	return c.String(http.StatusOK, "")
+	return c.JSON(http.StatusOK, Status{Status: "OK"})
 }
 
 // Validate timestamp timestamp is in the range of [current_timestamp-60sec, current_timestamp_120sec]
