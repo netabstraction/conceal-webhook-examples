@@ -42,7 +42,7 @@ class WebhookApiView(APIView):
 
         logRequest(request)
 
-        return Response({"msg": "ok"}, status=status.HTTP_200_OK, template_name=None, headers=None, content_type=None)
+        return Response({"status": "OK"}, status=status.HTTP_200_OK, template_name=None, headers=None, content_type=None)
 
 def isValidTimestamp(requestTimestamp):
     currentTimestamp = int(time.time())
