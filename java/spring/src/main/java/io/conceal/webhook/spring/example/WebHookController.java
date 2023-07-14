@@ -33,11 +33,11 @@ public class WebHookController {
         @RequestHeader("conceal-signature") final String signature ) throws IllegalArgumentException {
 
             if (!apiKeyValidator(apiKey)) {
-                return new ResponseEntity<>(new ConcealResponse("API Key missing/API Key doesnot match"), HttpStatus.UNAUTHORIZED);
+                return new ResponseEntity<>(new ConcealResponse("Invalid API Key"), HttpStatus.UNAUTHORIZED);
             }
 
             if (!timeStampValidator(Long.parseLong(timeStamp))) {
-                return new ResponseEntity<>(new ConcealResponse("Invalid Timestamp. Timestamp not in range"), HttpStatus.BAD_REQUEST);
+                return new ResponseEntity<>(new ConcealResponse("Invalid Timestamp"), HttpStatus.BAD_REQUEST);
             }
 
             if (!signatureValidator(timeStamp, signature)) {
@@ -45,7 +45,7 @@ public class WebHookController {
             }
 
             // DEMO: Print the payload
-            return new ResponseEntity<>(new ConcealResponse(payload.toString()), HttpStatus.OK);
+            return new ResponseEntity<>(new ConcealResponse("OK"), HttpStatus.OK);
     }
 
     public static void main(String[] args) {
@@ -76,8 +76,8 @@ public class WebHookController {
     }
 
     private boolean signatureValidator(final String timeStamp, final String signature) {
-        final String messasge = timeStamp + WEB_HOOK_URL;
-        final String expectedSignature = HmacUtils.hmacSha256Hex(SIGNATURE_KEY_CONSTANT, messasge);
+        final String message = timeStamp + WEB_HOOK_URL;
+        final String expectedSignature = HmacUtils.hmacSha256Hex(SIGNATURE_KEY_CONSTANT, message);
 
         if (signature != null && signature.equals(expectedSignature)) {
             return false;
