@@ -3,7 +3,8 @@
 		"_postman_id": "27859807-9128-4f33-8a9a-eccfca6979f9",
 		"name": "Webhook Example",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "20264462"
+		"_exporter_id": "20785676",
+		"_collection_link": "https://galactic-escape-260665.postman.co/workspace/NetAbstraction~cf38e5f1-6a75-42cf-8123-21d0c1c60843/collection/20264462-27859807-9128-4f33-8a9a-eccfca6979f9?action=share&creator=20785676&source=collection_link"
 	},
 	"item": [
 		{
@@ -55,7 +56,7 @@
 					}
 				},
 				"url": {
-					"raw": "http://127.0.0.1:4000/go/nethttp/api-key-signature-protected",
+					"raw": "http://127.0.0.1:8080/webhook",
 					"protocol": "http",
 					"host": [
 						"127",
@@ -63,11 +64,9 @@
 						"0",
 						"1"
 					],
-					"port": "4000",
+					"port": "8080",
 					"path": [
-						"go",
-						"nethttp",
-						"api-key-signature-protected"
+						"webhook"
 					]
 				}
 			},

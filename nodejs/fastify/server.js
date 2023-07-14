@@ -20,21 +20,21 @@ const handleWebhook = (req, res) => {
     // API Key Validation
     if (requestApiKey !== apiKeyValueConst) {
         console.log("Invalid API Key");
-        res.code(401).send({ msg: 'Invalid API Key' });
+        res.code(401).send({ error: 'Invalid API Key' });
         return;
     }
 
     // Timestamp Validation
     if (!isValidTimestamp(requestTimestamp)) {
         console.log("Invalid Timestamp");
-        res.code(400).send({ msg: 'Invalid Timestamp' });
+        res.code(400).send({ error: 'Invalid Timestamp' });
         return;
     };
 
     // Signature Validation
     if (!isValidSignature(requestTimestamp, requestSignature)) {
         console.log("Invalid Signature");
-        res.code(401).send({ msg: 'Invalid Signature' });
+        res.code(401).send({ error: 'Invalid Signature' });
         return;
     }
 
@@ -45,7 +45,7 @@ const handleWebhook = (req, res) => {
 
     // Return a success response
     console.log("200 Ok");
-    res.code(200).send({ msg: '200 Ok' });
+    res.code(200).send({ status: 'OK' });
 };
 
 const isValidTimestamp = (requestTimestamp) => {

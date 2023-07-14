@@ -2,5 +2,5 @@ build:
 	bundle install
 
 run:
-	bin/rails server
+	rails s
 

@@ -25,24 +25,24 @@ async def webhook_api(request: Request):
     # Api Key validation
     if not (compare_digest(request_api_key, API_KEY_VALUE_CONST)):
         print("Invalid Key")
-        return JSONResponse(content="Invalid Key", status_code=401)
+        return JSONResponse(content={"error": "Invalid API Key"}, status_code=401)
 
     # Timestamp validation
     if not (is_valid_timestamp(request_timestamp)):
         print("Invalid Timestamp")
-        return JSONResponse(content="Invalid Timestamp", status_code=400)
+        return JSONResponse(content={"error": "Invalid Timestamp"}, status_code=400)
 
     # Signature validation
     if not (is_valid_signature(request_timestamp, request_signature)):
         print("Invalid Signature")
-        return JSONResponse(content="Invalid Signature", status_code=401)
+        return JSONResponse(content={"error": "Invalid Signature"}, status_code=401)
 
     # Validate json body
     try:
         body = await request.json()
     except:
         print("Invalid Body")
-        return JSONResponse(content="Invalid Body", status_code=400)
+        return JSONResponse(content={"error": "Invalid Request Body"}, status_code=400)
    
     # Process the webhook payload
     # ..
@@ -51,7 +51,7 @@ async def webhook_api(request: Request):
 
     # Return a success response
     print("OK")
-    return JSONResponse(content="", status_code=200)
+    return JSONResponse(content={"status": "OK"}, status_code=200)
 
 # Validate timestamp timestamp is in the range of [current_timestamp-60sec, current_timestamp_120sec]
 def is_valid_timestamp(request_timestamp: any):

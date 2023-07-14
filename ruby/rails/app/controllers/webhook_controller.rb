@@ -45,7 +45,7 @@ class WebhookController < ApplicationController
         
         # Return a success response
         logger.info "OK"
-        render json: { message: "OK"}
+        render json: { status: "OK"}
     end
 
     # Validate timestamp timestamp is in the range of [current_timestamp-60sec, current_timestamp_120sec]
