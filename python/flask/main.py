@@ -1,10 +1,9 @@
-import json
 import time
 import hmac
 import hashlib
 
 from hmac import compare_digest
-from flask import Flask, Response, request
+from flask import Flask, Response, request, jsonify
 
 SIGNATURE_KEY_CONST = "signature-key"
 API_KEY_CONST = "x-api-key"
@@ -22,24 +21,24 @@ async def handle_webhook():
     # API Key Validation
     if not (compare_digest(request_api_key, API_KEY_VALUE_CONST)):
         print("Invalid Key")
-        return Response("{'error': 'Invalid API Key'}", status=401, mimetype='application/json')
+        return jsonify({"error": "Invalid API Key"}), 401
 
     # Timestamp Validation
     if not(is_valid_timestamp(request_timestamp)):
         print("Invalid Timestamp")
-        return Response("{'error': 'Invalid Timestamp'}", status=400, mimetype='application/json')
+        return jsonify({"error": "Invalid Timestamp"}), 400
 
     # Signature Validation
     if not(is_valid_signature(request_timestamp, request_signature)):
         print("Invalid Signature")
-        return Response("{'error': 'Invalid Signature'}", status=401, mimetype='application/json')
+        return jsonify({"error": "Invalid Signature"}), 401
 
     # Process the webhook payload
     # ..
     await log_request(request)
 
     print("OK")
-    return json.dumps({'msg': 'Ok'})
+    return jsonify({"status": "OK"})
 
 def is_valid_timestamp(request_timestamp):
     if(request_timestamp is None):
