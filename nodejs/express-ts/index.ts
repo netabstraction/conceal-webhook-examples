@@ -23,19 +23,19 @@ const handleWebhook = (req: Request, res: Response) => {
   // API Key validation
   if (requestApiKey !== apiKeyValueConst) {
     console.log("Invalid API Key");
-    return res.status(401).json({ msg: "Invalid API Key" });
+    return res.status(401).json({ error: "Invalid API Key" });
   }
 
   // Timestamp validation
   if (!isValidTimestamp(requestTimestamp)) {
     console.log("Invalid Timestamp");
-    return res.status(400).json({ msg: "Invalid Timestamp" });
+    return res.status(400).json({ error: "Invalid Timestamp" });
   }
 
   //Signature validation
   if (!isValidSignature(requestTimestamp, requestSignature)) {
     console.log("Invalid Signature");
-    return res.status(401).json({ msg: "Invalid Signature" });
+    return res.status(401).json({ error: "Invalid Signature" });
   }
 
   // Process the webhook payload
@@ -45,7 +45,7 @@ const handleWebhook = (req: Request, res: Response) => {
 
   // Return a success response
   console.log("Ok");
-  res.status(200).json();
+  res.status(200).json({ status: "OK" });
 };
 
 // Validate timestamp timestamp is in the range of [current_timestamp-60sec, current_timestamp_120sec]
