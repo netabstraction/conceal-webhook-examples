@@ -1,10 +1,6 @@
 package io.conceal.webhook.spring.example;
 
-import java.io.Console;
-
 import org.apache.commons.codec.digest.HmacUtils;
-import org.apache.commons.logging.Log;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
